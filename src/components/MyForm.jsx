@@ -1,4 +1,5 @@
 import useForm from '../hooks/useForm'
+import * as Yup from 'yup'
 
 function MyForm() {
     const initialValues = {
@@ -7,15 +8,15 @@ function MyForm() {
         password: ''
     }
 
-    const validationSchema = {
-        name: value => (value ? '' : 'Pole jest wymagane'),
-        email: value => (/\S+@\S+\.\S+/.test(value) ? '' : 'Niepoprawny adres email'),
-        password: value => (value.length >= 8 ? '' : 'Hasło musi mieć co najmniej 8 znaków')
-    }
+    const validationSchema = Yup.object().shape({
+        name: Yup.string().min(2, 'Too Short!').max(50, 'Too Long!').required('Required'),
+        password: Yup.string().min(2, 'Too Short!').max(50, 'Too Long!').required('Required'),
+        email: Yup.string().email('Invalid email').required('Required')
+    })
 
     const onSubmit = values => {
-        console.log('Wartości formularza:', values, isDirty, errors)
-        alert(JSON.stringify({ values }))
+        console.log('Wartości formularza:', values, isDirty, errors, touched)
+        alert(JSON.stringify(values, 2, null))
     }
 
     const { values, errors, touched, isDirty, inputHandlers, formHandlers } = useForm(
@@ -25,20 +26,20 @@ function MyForm() {
     )
 
     return (
-        <form className='block__form' onSubmit={formHandlers.onSubmit}>
+        <form className='block__form' onSubmit={formHandlers.onSubmit} noValidate>
             <div>
                 <label htmlFor='name'>Imię:</label>
                 <input
                     type='text'
                     id='name'
                     name='name'
-                    placeholder='Name*'
+                    placeholder='Full name*'
                     value={values.name}
                     onChange={inputHandlers.onChange}
                     onBlur={inputHandlers.onBlur}
                     required
                 />
-                {touched.name && errors.name && <p className='error'>{errors.name}</p>}
+                {errors.name && <p className='error'>{errors.name}</p>}
             </div>
             <div>
                 <label htmlFor='email'>Email:</label>
@@ -52,7 +53,7 @@ function MyForm() {
                     onBlur={inputHandlers.onBlur}
                     required
                 />
-                {touched.email && errors.email && <p className='error'>{errors.email}</p>}
+                {errors.email && <p className='error'>{errors.email}</p>}
             </div>
             <div>
                 <label htmlFor='password'>Hasło:</label>
@@ -66,7 +67,7 @@ function MyForm() {
                     onBlur={inputHandlers.onBlur}
                     required
                 />
-                {touched.password && errors.password && <p className='error'>{errors.password}</p>}
+                {errors.password && <p className='error'>{errors.password}</p>}
             </div>
             <button type='submit' disabled={!isDirty}>
                 CLAIM YOUR FREE TRIAL

@@ -1,57 +1,49 @@
 import { useState } from 'react'
+import * as Yup from 'yup'
 
 const useForm = (initialValues, onSubmit, validationSchema) => {
     const [values, setValues] = useState(initialValues)
     const [errors, setErrors] = useState({})
     const [touched, setTouched] = useState({})
-    const [isDirty, setIsDirty] = useState(false)
+    const [isDirty, setDirty] = useState(false)
 
     const handleChange = e => {
         const { name, value } = e.target
-        setValues({
-            ...values,
-            [name]: value
-        })
-        setIsDirty(true)
+        setValues({ ...values, [name]: value })
+        setDirty(true)
     }
 
     const handleBlur = e => {
         const { name, value } = e.target
-        setTouched({
-            ...touched,
-            [name]: true
-        })
+        setTouched({ ...touched, [name]: true })
 
-        // Wywołanie funkcji walidacji z odpowiednim polem i wartością
-        if (validationSchema[name]) {
-            const error = validationSchema[name](value)
-            setErrors({
-                ...errors,
-                [name]: error
+        Yup.reach(validationSchema, name)
+            .validate(value)
+            .then(() => {
+                setErrors({ ...errors, [name]: '' })
             })
-        }
+            .catch(error => {
+                setErrors({ ...errors, [name]: error.message })
+            })
     }
 
     const handleSubmit = e => {
         e.preventDefault()
 
-        // Walidacja całego formularza
-        const newErrors = {}
-        for (const fieldName in validationSchema) {
-            if (validationSchema[fieldName]) {
-                const error = validationSchema[fieldName](values[fieldName])
-                if (error) {
-                    newErrors[fieldName] = error
-                }
-            }
-        }
-
-        setErrors(newErrors)
-
-        // Jeżeli formularz jest poprawny, wywołaj funkcję onSubmit
-        if (Object.keys(newErrors).length === 0) {
-            onSubmit(values)
-        }
+        validationSchema
+            .validate(values, { abortEarly: false })
+            .then(() => {
+                onSubmit(values)
+                setErrors({})
+                setDirty(false)
+            })
+            .catch(validationErrors => {
+                const newErrors = {}
+                validationErrors.inner.forEach(error => {
+                    newErrors[error.path] = error.message
+                })
+                setErrors(newErrors)
+            })
     }
 
     return {
