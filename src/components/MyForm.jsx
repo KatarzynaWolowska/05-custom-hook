@@ -1,5 +1,6 @@
 import useForm from '../hooks/useForm'
 import * as Yup from 'yup'
+import { useEffect } from 'react'
 
 function MyForm() {
     const initialValues = {
@@ -10,8 +11,8 @@ function MyForm() {
 
     const validationSchema = Yup.object().shape({
         name: Yup.string().min(2, 'Too Short!').max(50, 'Too Long!').required('Required'),
-        password: Yup.string().min(2, 'Too Short!').max(50, 'Too Long!').required('Required'),
-        email: Yup.string().email('Invalid email').required('Required')
+        email: Yup.string().email('Invalid email').required('Required'),
+        password: Yup.string().min(2, 'Too Short!').max(50, 'Too Long!').required('Required')
     })
 
     const onSubmit = values => {
@@ -39,7 +40,7 @@ function MyForm() {
                     onBlur={inputHandlers.onBlur}
                     required
                 />
-                {errors.name && <p className='error'>{errors.name}</p>}
+                {errors.name && touched.name && <p className='error'>{errors.name}</p>}
             </div>
             <div>
                 <label htmlFor='email'>Email:</label>
@@ -53,7 +54,7 @@ function MyForm() {
                     onBlur={inputHandlers.onBlur}
                     required
                 />
-                {errors.email && <p className='error'>{errors.email}</p>}
+                {errors.email && touched.email && <p className='error'>{errors.email}</p>}
             </div>
             <div>
                 <label htmlFor='password'>Hasło:</label>
@@ -67,7 +68,7 @@ function MyForm() {
                     onBlur={inputHandlers.onBlur}
                     required
                 />
-                {errors.password && <p className='error'>{errors.password}</p>}
+                {errors.password && touched.password && <p className='error'>{errors.password}</p>}
             </div>
             <button type='submit' disabled={!isDirty}>
                 CLAIM YOUR FREE TRIAL

@@ -7,15 +7,8 @@ const useForm = (initialValues, onSubmit, validationSchema) => {
     const [touched, setTouched] = useState({})
     const [isDirty, setDirty] = useState(false)
 
-    const handleChange = e => {
+    const validateInput = e => {
         const { name, value } = e.target
-        setValues({ ...values, [name]: value })
-        setDirty(true)
-    }
-
-    const handleBlur = e => {
-        const { name, value } = e.target
-        setTouched({ ...touched, [name]: true })
 
         Yup.reach(validationSchema, name)
             .validate(value)
@@ -25,6 +18,19 @@ const useForm = (initialValues, onSubmit, validationSchema) => {
             .catch(error => {
                 setErrors({ ...errors, [name]: error.message })
             })
+    }
+
+    const handleChange = e => {
+        const { name, value } = e.target
+        setValues({ ...values, [name]: value })
+        setDirty(true)
+        validateInput(e)
+    }
+
+    const handleBlur = e => {
+        const { name } = e.target
+        setTouched({ ...touched, [name]: true })
+        validateInput(e)
     }
 
     const handleSubmit = e => {
